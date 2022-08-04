@@ -1,7 +1,7 @@
 // TODO Draggable for group
 // FIXME Draggable on element which has parent rotation or scale
 function Draggable() {
-
+    console.log(this);
     this.on('mousedown', this._dragStart, this);
     this.on('mousemove', this._drag, this);
     this.on('mouseup', this._dragEnd, this);
@@ -32,15 +32,18 @@ Draggable.prototype = {
             draggingTarget.dragging = true;
             this._x = e.offsetX;
             this._y = e.offsetY;
-
+            console.log('daggger');
             this.dispatchToElement(param(draggingTarget, e), 'dragstart', e.event);
         }
     },
 
     _drag: function (e) {
         var draggingTarget = this._draggingTarget;
-        if (draggingTarget) {
 
+
+        if (draggingTarget) {
+            console.log(draggingTarget);
+            console.log(this._x, this._y);
             var x = e.offsetX;
             var y = e.offsetY;
 

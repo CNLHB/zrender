@@ -463,11 +463,16 @@ function mountGlobalDOMEventListeners(instance, scope) {
 function mountSingleDOMEventListener(scope, nativeEventName, listener, opt) {
     scope.mounted[nativeEventName] = listener;
     scope.listenerOpts[nativeEventName] = opt;
+    // console.log(scope);
+    // console.log(nativeEventName);
+    // console.log(listener, opt);
+    // console.log('===========================');
     addEventListener(scope.domTarget, eventNameFix(nativeEventName), listener, opt);
 }
 
 function unmountDOMEventListeners(scope) {
     var mounted = scope.mounted;
+    console.log(scope);
     for (var nativeEventName in mounted) {
         if (mounted.hasOwnProperty(nativeEventName)) {
             removeEventListener(

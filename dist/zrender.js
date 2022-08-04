@@ -1221,7 +1221,7 @@ var vector = (Object.freeze || Object)({
 // TODO Draggable for group
 // FIXME Draggable on element which has parent rotation or scale
 function Draggable() {
-
+    console.log(this);
     this.on('mousedown', this._dragStart, this);
     this.on('mousemove', this._drag, this);
     this.on('mouseup', this._dragEnd, this);
@@ -1252,15 +1252,18 @@ Draggable.prototype = {
             draggingTarget.dragging = true;
             this._x = e.offsetX;
             this._y = e.offsetY;
-
+            console.log('daggger');
             this.dispatchToElement(param(draggingTarget, e), 'dragstart', e.event);
         }
     },
 
     _drag: function (e) {
         var draggingTarget = this._draggingTarget;
-        if (draggingTarget) {
 
+
+        if (draggingTarget) {
+            console.log(draggingTarget);
+            console.log(this._x, this._y);
             var x = e.offsetX;
             var y = e.offsetY;
 
@@ -1598,6 +1601,81 @@ function on(eventful, event, query, handler, context, isOnce) {
     return eventful;
 }
 
+// ----------------------
+// The events in zrender
+// ----------------------
+
+/**
+ * @event module:zrender/mixin/Eventful#onclick
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#onmouseover
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#onmouseout
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#onmousemove
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#onmousewheel
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#onmousedown
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#onmouseup
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#ondrag
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#ondragstart
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#ondragend
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#ondragenter
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#ondragleave
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#ondragover
+ * @type {Function}
+ * @default null
+ */
+/**
+ * @event module:zrender/mixin/Eventful#ondrop
+ * @type {Function}
+ * @default null
+ */
+
 /**
  * The algoritm is learnt from
  * https://franklinta.com/2014/09/08/computing-css-matrix3d-transforms/
@@ -1701,39 +1779,6 @@ function buildTransformer(src, dest) {
 }
 
 var EVENT_SAVED_PROP = '___zrEVENTSAVED';
-/**
- * Transform "local coord" from `elFrom` to `elTarget`.
- * "local coord": the coord based on the input `el`. The origin point is at
- *     the position of "left: 0; top: 0;" in the `el`.
- *
- * Support when CSS transform is used.
- *
- * Having the `out` (that is, `[outX, outY]`), we can create an DOM element
- * and set the CSS style as "left: outX; top: outY;" and append it to `elTarge`
- * to locate the element.
- *
- * For example, this code below positions a child of `document.body` on the event
- * point, no matter whether `body` has `margin`/`paddin`/`transfrom`/... :
- * ```js
- * transformLocalCoord(out, container, document.body, event.offsetX, event.offsetY);
- * if (!eqNaN(out[0])) {
- *     // Then locate the tip element on the event point.
- *     var tipEl = document.createElement('div');
- *     tipEl.style.cssText = 'position: absolute; left:' + out[0] + ';top:' + out[1] + ';';
- *     document.body.appendChild(tipEl);
- * }
- * ```
- *
- * Notice: In some env this method is not supported. If called, `out` will be `[NaN, NaN]`.
- *
- * @param {Array.<number>} out [inX: number, inY: number] The output..
- *        If can not transform, `out` will not be modified but return `false`.
- * @param {HTMLElement} elFrom The `[inX, inY]` is based on elFrom.
- * @param {HTMLElement} elTarget The `out` is based on elTarget.
- * @param {number} inX
- * @param {number} inY
- * @return {boolean} Whether transform successfully.
- */
 
 
 /**
@@ -2095,6 +2140,10 @@ var stop = isDomLevel2
  * @deprecated
  */
 
+
+
+// For backward compatibility
+
 /**
  * Only implements needed gestures for mobile.
  */
@@ -2209,65 +2258,6 @@ var recognizers = {
     // Only pinch currently.
 };
 
-/**
- * [The interface between `Handler` and `HandlerProxy`]:
- *
- * The default `HandlerProxy` only support the common standard web environment
- * (e.g., standalone browser, headless browser, embed browser in mobild APP, ...).
- * But `HandlerProxy` can be replaced to support more non-standard environment
- * (e.g., mini app), or to support more feature that the default `HandlerProxy`
- * not provided (like echarts-gl did).
- * So the interface between `Handler` and `HandlerProxy` should be stable. Do not
- * make break changes util inevitable. The interface include the public methods
- * of `Handler` and the events listed in `handlerNames` below, by which `HandlerProxy`
- * drives `Handler`.
- */
-
-/**
- * [Drag outside]:
- *
- * That is, triggering `mousemove` and `mouseup` event when the pointer is out of the
- * zrender area when dragging. That is important for the improvement of the user experience
- * when dragging something near the boundary without being terminated unexpectedly.
- *
- * We originally consider to introduce new events like `pagemovemove` and `pagemouseup`
- * to resolve this issue. But some drawbacks of it is described in
- * https://github.com/ecomfe/zrender/pull/536#issuecomment-560286899
- *
- * Instead, we referenced the specifications:
- * https://www.w3.org/TR/touch-events/#the-touchmove-event
- * https://www.w3.org/TR/2014/WD-DOM-Level-3-Events-20140925/#event-type-mousemove
- * where the the mousemove/touchmove can be continue to fire if the user began a drag
- * operation and the pointer has left the boundary. (for the mouse event, browsers
- * only do it on `document` and when the pointer has left the boundary of the browser.)
- *
- * So the default `HandlerProxy` supports this feature similarly: if it is in the dragging
- * state (see `pointerCapture` in `HandlerProxy`), the `mousemove` and `mouseup` continue
- * to fire until release the pointer. That is implemented by listen to those event on
- * `document`.
- * If we implement some other `HandlerProxy` only for touch device, that would be easier.
- * The touch event support this feature by default.
- *
- * Note:
- * There might be some cases that the mouse event can not be
- * received on `document`. For example,
- * (A) `useCapture` is not supported and some user defined event listeners on the ancestor
- * of zr dom throw Error .
- * (B) `useCapture` is not supported Some user defined event listeners on the ancestor of
- * zr dom call `stopPropagation`.
- * In these cases, the `mousemove` event might be keep triggered event
- * if the mouse is released. We try to reduce the side-effect in those cases.
- * That is, do nothing (especially, `findHover`) in those cases. See `isOutsideBoundary`.
- *
- * Note:
- * If `HandlerProxy` listens to `document` with `useCapture`, `HandlerProxy` needs to
- * make sure `stopPropagation` and `preventDefault` doing nothing if and only if the event
- * target is not zrender dom. Becuase it is dangerous to enable users to call them in
- * `document` capture phase to prevent the propagation to any listener of the webpage.
- * But they are needed to work when the pointer inside the zrender dom.
- */
-
-
 var SILENT = 'silent';
 
 function makeEventPacket(eveType, targetInfo, event) {
@@ -2374,7 +2364,6 @@ Handler.prototype = {
         if (this.proxy) {
             this.proxy.dispose();
         }
-
         if (proxy) {
             each(handlerNames, function (name) {
                 proxy.on && proxy.on(name, this[name], this);
@@ -2388,7 +2377,7 @@ Handler.prototype = {
     mousemove: function (event) {
         var x = event.zrX;
         var y = event.zrY;
-
+        // console.log('event', event);
         var isOutside = isOutsideBoundary(this, x, y);
 
         var lastHovered = this._hovered;
@@ -2404,6 +2393,7 @@ Handler.prototype = {
         }
 
         var hovered = this._hovered = isOutside ? {x: x, y: y} : this.findHover(x, y);
+        // console.log(hovered);
         var hoveredTarget = hovered.target;
 
         var proxy = this.proxy;
@@ -2496,7 +2486,6 @@ Handler.prototype = {
         while (el) {
             el[eventHandler]
                 && (eventPacket.cancelBubble = el[eventHandler].call(el, eventPacket));
-
             el.trigger(eventName, eventPacket);
 
             el = el.parent;
@@ -5023,10 +5012,6 @@ if (debugMode === 1) {
 
 var logError$1 = logError;
 
-/**
- * @alias module:zrender/mixin/Animatable
- * @constructor
- */
 var Animatable = function () {
 
     /**
@@ -5773,12 +5758,6 @@ BoundingRect.create = function (rect) {
  *     zr.add(g);
  */
 
-/**
- * @alias module:zrender/graphic/Group
- * @constructor
- * @extends module:zrender/mixin/Transformable
- * @extends module:zrender/mixin/Eventful
- */
 var Group = function (opts) {
 
     opts = opts || {};
@@ -6729,8 +6708,6 @@ function sort(array, compare, lo, hi) {
     ts.forceMergeRuns();
 }
 
-// Use timsort because in most case elements are partially sorted
-// https://jsfiddle.net/pissang/jr4x7mdm/8/
 function shapeCompareFunc(a, b) {
     if (a.zlevel === b.zlevel) {
         if (a.z === b.z) {
@@ -9266,11 +9243,6 @@ RectText.prototype = {
  */
 
 
-/**
- * @alias module:zrender/graphic/Displayable
- * @extends module:zrender/Element
- * @extends module:zrender/graphic/mixin/RectText
- */
 function Displayable(opts) {
 
     opts = opts || {};
@@ -9543,13 +9515,8 @@ Displayable.prototype = {
 inherits(Displayable, Element);
 
 mixin(Displayable, RectText);
+// zrUtil.mixin(Displayable, Stateful);
 
-/**
- * @alias zrender/graphic/Image
- * @extends module:zrender/graphic/Displayable
- * @constructor
- * @param {Object} opts
- */
 function ZImage(opts) {
     Displayable.call(this, opts);
 }
@@ -10730,34 +10697,6 @@ Painter.prototype = {
 // http://iosoteric.com/additive-animations-animatewithduration-in-ios-8/
 // https://developer.apple.com/videos/wwdc2014/#236
 
-/**
- * @typedef {Object} IZRenderStage
- * @property {Function} update
- */
-
-/**
- * @alias module:zrender/animation/Animation
- * @constructor
- * @param {Object} [options]
- * @param {Function} [options.onframe]
- * @param {IZRenderStage} [options.stage]
- * @example
- *     var animation = new Animation();
- *     var obj = {
- *         x: 100,
- *         y: 100
- *     };
- *     animation.animate(node.position)
- *         .when(1000, {
- *             x: 500,
- *             y: 500
- *         })
- *         .when(2000, {
- *             x: 100,
- *             y: 100
- *         })
- *         .start('spline');
- */
 var Animation = function (options) {
 
     options = options || {};
@@ -11428,11 +11367,16 @@ function mountGlobalDOMEventListeners(instance, scope) {
 function mountSingleDOMEventListener(scope, nativeEventName, listener, opt) {
     scope.mounted[nativeEventName] = listener;
     scope.listenerOpts[nativeEventName] = opt;
+    // console.log(scope);
+    // console.log(nativeEventName);
+    // console.log(listener, opt);
+    // console.log('===========================');
     addEventListener(scope.domTarget, eventNameFix(nativeEventName), listener, opt);
 }
 
 function unmountDOMEventListeners(scope) {
     var mounted = scope.mounted;
+    console.log(scope);
     for (var nativeEventName in mounted) {
         if (mounted.hasOwnProperty(nativeEventName)) {
             removeEventListener(
@@ -11547,7 +11491,6 @@ var instances = {};    // ZRender实例map索引
  * @type {string}
  */
 var version = '4.3.2';
-
 /**
  * Initializing a zrender instance
  * @param {HTMLElement} dom
@@ -13503,21 +13446,6 @@ function containStroke$1(x0, y0, x1, y1, lineWidth, x, y) {
     return _s <= _l / 2 * _l / 2;
 }
 
-/**
- * 三次贝塞尔曲线描边包含判断
- * @param  {number}  x0
- * @param  {number}  y0
- * @param  {number}  x1
- * @param  {number}  y1
- * @param  {number}  x2
- * @param  {number}  y2
- * @param  {number}  x3
- * @param  {number}  y3
- * @param  {number}  lineWidth
- * @param  {number}  x
- * @param  {number}  y
- * @return {boolean}
- */
 function containStroke$2(x0, y0, x1, y1, x2, y2, x3, y3, lineWidth, x, y) {
     if (lineWidth === 0) {
         return false;
@@ -13539,19 +13467,6 @@ function containStroke$2(x0, y0, x1, y1, x2, y2, x3, y3, lineWidth, x, y) {
     return d <= _l / 2;
 }
 
-/**
- * 二次贝塞尔曲线描边包含判断
- * @param  {number}  x0
- * @param  {number}  y0
- * @param  {number}  x1
- * @param  {number}  y1
- * @param  {number}  x2
- * @param  {number}  y2
- * @param  {number}  lineWidth
- * @param  {number}  x
- * @param  {number}  y
- * @return {boolean}
- */
 function containStroke$3(x0, y0, x1, y1, x2, y2, lineWidth, x, y) {
     if (lineWidth === 0) {
         return false;
@@ -14529,12 +14444,6 @@ var transformPath = function (path, m) {
     }
 };
 
-// command chars
-// var cc = [
-//     'm', 'M', 'l', 'L', 'v', 'V', 'h', 'H', 'z', 'Z',
-//     'c', 'C', 'q', 'Q', 't', 'T', 's', 'S', 'a', 'A'
-// ];
-
 var mathSqrt = Math.sqrt;
 var mathSin = Math.sin;
 var mathCos = Math.cos;
@@ -14968,12 +14877,6 @@ var path = (Object.freeze || Object)({
 	mergePath: mergePath
 });
 
-/**
- * @alias zrender/graphic/Text
- * @extends module:zrender/graphic/Displayable
- * @constructor
- * @param {Object} opts
- */
 var Text = function (opts) { // jshint ignore:line
     Displayable.call(this, opts);
 };
@@ -15212,7 +15115,6 @@ function subPixelOptimize(position, lineWidth, positiveOrNegative) {
  * @module zrender/graphic/shape/Rect
  */
 
-// Avoid create repeatly.
 var subPixelOptimizeOutputShape = {};
 
 var Rect = Path.extend({
@@ -15303,7 +15205,6 @@ var Ellipse = Path.extend({
  * @module zrender/graphic/shape/Line
  */
 
-// Avoid create repeatly.
 var subPixelOptimizeOutputShape$1 = {};
 
 var Line = Path.extend({
@@ -15383,9 +15284,6 @@ var Line = Path.extend({
  *         errorrik (errorrik@gmail.com)
  */
 
-/**
- * @inner
- */
 function interpolate(p0, p1, p2, p3, t, t2, t3) {
     var v0 = (p2 - p0) * 0.5;
     var v1 = (p3 - p1) * 0.5;
@@ -15451,17 +15349,6 @@ var smoothSpline = function (points, isLoop) {
  *         errorrik (errorrik@gmail.com)
  */
 
-/**
- * 贝塞尔平滑曲线
- * @alias module:zrender/shape/util/smoothBezier
- * @param {Array} points 线段顶点数组
- * @param {number} smooth 平滑等级, 0-1
- * @param {boolean} isLoop
- * @param {Array} constraint 将计算出来的控制点约束在一个包围盒内
- *                           比如 [[0, 0], [100, 100]], 这个包围盒会与
- *                           整个折线的包围盒做一个并集用来约束控制点。
- * @param {Array} 计算出来的控制点数组
- */
 var smoothBezier = function (points, smooth, isLoop, constraint) {
     var cps = [];
 
@@ -15645,15 +15532,6 @@ Gradient.prototype = {
 
 };
 
-/**
- * x, y, x2, y2 are all percent from 0 to 1
- * @param {number} [x=0]
- * @param {number} [y=0]
- * @param {number} [x2=1]
- * @param {number} [y2=0]
- * @param {Array.<Object>} colorStops
- * @param {boolean} [globalCoord=false]
- */
 var LinearGradient = function (x, y, x2, y2, colorStops, globalCoord) {
     // Should do nothing more in this constructor. Because gradient can be
     // declard by `color: {type: 'linear', colorStops: ...}`, where
@@ -15683,10 +15561,6 @@ LinearGradient.prototype = {
 
 inherits(LinearGradient, Gradient);
 
-// import RadialGradient from '../graphic/RadialGradient';
-// import Pattern from '../graphic/Pattern';
-// import * as vector from '../core/vector';
-// Most of the values can be separated by comma and/or white space.
 var DILIMITER_REG = /[\s,]+/;
 
 /**
@@ -16416,7 +16290,6 @@ var CompoundPath = Path.extend({
  *
  * It use a not clearFlag to tell the painter don't clear the layer if it's the first element.
  */
-// TODO Style override ?
 function IncrementalDisplayble(opts) {
 
     Displayable.call(this, opts);
@@ -16917,21 +16790,6 @@ var Rose = Path.extend({
     }
 });
 
-// Fix weird bug in some version of IE11 (like 11.0.9600.178**),
-// where exception "unexpected call to method or property access"
-// might be thrown when calling ctx.fill or ctx.stroke after a path
-// whose area size is zero is drawn and ctx.clip() is called and
-// shadowBlur is set. See #4572, #3112, #5777.
-// (e.g.,
-//  ctx.moveTo(10, 10);
-//  ctx.lineTo(20, 10);
-//  ctx.closePath();
-//  ctx.clip();
-//  ctx.shadowBlur = 10;
-//  ...
-//  ctx.fill();
-// )
-
 var shadowTemp = [
     ['shadowBlur', 0],
     ['shadowColor', '#000'],
@@ -17180,14 +17038,6 @@ var Trochoid = Path.extend({
     }
 });
 
-/**
- * x, y, r are all percent from 0 to 1
- * @param {number} [x=0.5]
- * @param {number} [y=0.5]
- * @param {number} [r=0.5]
- * @param {Array.<Object>} [colorStops]
- * @param {boolean} [globalCoord=false]
- */
 var RadialGradient = function (x, y, r, colorStops, globalCoord) {
     // Should do nothing more in this constructor. Because gradient can be
     // declard by `color: {type: 'radial', colorStops: ...}`, where
@@ -18181,14 +18031,6 @@ Definable.prototype.getSvgElement = function (displayable) {
  * @author Zhang Wenli
  */
 
-/**
- * Manages SVG gradient elements.
- *
- * @class
- * @extends Definable
- * @param   {number}     zrId    zrender instance id
- * @param   {SVGElement} svgRoot root of SVG document
- */
 function GradientManager(zrId, svgRoot) {
     Definable.call(
         this,
@@ -18402,14 +18244,6 @@ GradientManager.prototype.markUsed = function (displayable) {
  * @author Zhang Wenli
  */
 
-/**
- * Manages SVG clipPath elements.
- *
- * @class
- * @extends Definable
- * @param   {number}     zrId    zrender instance id
- * @param   {SVGElement} svgRoot root of SVG document
- */
 function ClippathManager(zrId, svgRoot) {
     Definable.call(this, zrId, svgRoot, 'clipPath', '__clippath_in_use__');
 }
@@ -18569,14 +18403,6 @@ ClippathManager.prototype.markUsed = function (displayable) {
  * @author Zhang Wenli
  */
 
-/**
- * Manages SVG shadow elements.
- *
- * @class
- * @extends Definable
- * @param   {number}     zrId    zrender instance id
- * @param   {SVGElement} svgRoot root of SVG document
- */
 function ShadowManager(zrId, svgRoot) {
     Definable.call(
         this,

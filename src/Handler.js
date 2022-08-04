@@ -171,7 +171,6 @@ Handler.prototype = {
         if (this.proxy) {
             this.proxy.dispose();
         }
-
         if (proxy) {
             util.each(handlerNames, function (name) {
                 proxy.on && proxy.on(name, this[name], this);
@@ -185,7 +184,7 @@ Handler.prototype = {
     mousemove: function (event) {
         var x = event.zrX;
         var y = event.zrY;
-
+        // console.log('event', event);
         var isOutside = isOutsideBoundary(this, x, y);
 
         var lastHovered = this._hovered;
@@ -201,6 +200,7 @@ Handler.prototype = {
         }
 
         var hovered = this._hovered = isOutside ? {x: x, y: y} : this.findHover(x, y);
+        // console.log(hovered);
         var hoveredTarget = hovered.target;
 
         var proxy = this.proxy;
@@ -293,7 +293,6 @@ Handler.prototype = {
         while (el) {
             el[eventHandler]
                 && (eventPacket.cancelBubble = el[eventHandler].call(el, eventPacket));
-
             el.trigger(eventName, eventPacket);
 
             el = el.parent;

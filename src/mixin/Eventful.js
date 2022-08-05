@@ -27,6 +27,7 @@ var arrySlice = Array.prototype.slice;
  */
 var Eventful = function (eventProcessor) {
     this._$handlers = {};
+    // console.log('eventProcessor',eventProcessor);
     this._$eventProcessor = eventProcessor;
 };
 
@@ -55,6 +56,7 @@ Eventful.prototype = {
      * @param {Object} [context]
      */
     on: function (event, query, handler, context) {
+        console.log(this._$handlers);
         return on(this, event, query, handler, context, false);
     },
 
@@ -115,11 +117,9 @@ Eventful.prototype = {
     trigger: function (type) {
         var _h = this._$handlers[type];
         var eventProcessor = this._$eventProcessor;
-
         if (_h) {
             var args = arguments;
             var argLen = args.length;
-
             if (argLen > 3) {
                 args = arrySlice.call(args, 1);
             }
@@ -244,7 +244,6 @@ function normalizeQuery(host, query) {
 
 function on(eventful, event, query, handler, context, isOnce) {
     var _h = eventful._$handlers;
-
     if (typeof query === 'function') {
         context = handler;
         handler = query;

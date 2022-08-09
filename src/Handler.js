@@ -4,6 +4,8 @@ import Draggable from './mixin/Draggable';
 import Eventful from './mixin/Eventful';
 import * as eventTool from './core/event';
 import GestureMgr from './core/GestureMgr';
+let Map = window.Map;
+import keyboard from './KeyboardJS/index';
 
 
 /**
@@ -157,9 +159,21 @@ var Handler = function (storage, painter, proxy, painterRoot) {
      * @type {module:zrender/core/GestureMgr}
      */
     this._gestureMgr;
-
+    this.keyMap = new Map();
+    this.ctrl = false;
     Draggable.call(this);
+    keyboard.bind('ctrl + c', (event) => {
+        console.log('ctrl+c', event);
+        this.ctrl = true;
+    });
+    keyboard.bind('ctrl', (event) => {
+        console.log('ctrl  click down');
+        this.ctrl = false;
 
+    }, (event) => {
+        console.log('ctrl  click up');
+
+    });
     this.setHandlerProxy(proxy);
 };
 
@@ -180,7 +194,6 @@ Handler.prototype = {
         }
         this.proxy = proxy;
     },
-
     mousemove: function (event) {
         var x = event.zrX;
         var y = event.zrY;
@@ -413,7 +426,7 @@ util.each(['click', 'mousedown', 'mouseup', 'mousewheel', 'dblclick', 'contextme
             }
             this._downPoint = null;
         }
-
+        console.log('hovered', hovered);
         this.dispatchToElement(hovered, name, event);
     };
 });

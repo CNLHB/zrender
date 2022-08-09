@@ -321,7 +321,6 @@ zrUtil.each(['click', 'mousewheel', 'dblclick', 'contextmenu'], function (name) 
  * @this {HandlerProxy}
  */
 var globalDOMHandlers = {
-
     pointermove: function (event) {
         // FIXME
         // pointermove is so sensitive that it always triggered when
@@ -356,7 +355,11 @@ var globalDOMHandlers = {
 
 };
 
-
+var globalMountDOMHandlers = {
+    keydown: function (event) {
+        console.log(event);
+    }
+};
 /**
  * @param {HandlerProxy} instance
  * @param {DOMHandlerScope} scope
@@ -416,6 +419,7 @@ function mountLocalDOMEventListeners(instance, scope) {
                 event = getNativeEvent(event);
                 if (!scope.touching) {
                     // markTriggeredFromLocal(event);
+                // console.log('nativeEventName', nativeEventName);
                     domHandlers[nativeEventName].call(instance, event);
                 }
             });
@@ -472,7 +476,6 @@ function mountSingleDOMEventListener(scope, nativeEventName, listener, opt) {
 
 function unmountDOMEventListeners(scope) {
     var mounted = scope.mounted;
-    console.log(scope);
     for (var nativeEventName in mounted) {
         if (mounted.hasOwnProperty(nativeEventName)) {
             removeEventListener(
@@ -532,7 +535,7 @@ function HandlerDomProxy(dom, painterRoot) {
     this.painterRoot = painterRoot;
 
     this._localHandlerScope = new DOMHandlerScope(dom, localDOMHandlers);
-
+    this._globalMoundHandlerScope = new DOMHandlerScope(document, globalMountDOMHandlers);
     if (globalEventSupported) {
         this._globalHandlerScope = new DOMHandlerScope(document, globalDOMHandlers);
     }
@@ -545,7 +548,7 @@ function HandlerDomProxy(dom, painterRoot) {
      * @type {Array.<number>} [x, y] or null.
      */
     this._mayPointerCapture = null;
-
+    // mountLocalDOMEventListeners(this, this._globalMoundHandlerScope);
     mountLocalDOMEventListeners(this, this._localHandlerScope);
 }
 

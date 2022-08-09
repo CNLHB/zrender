@@ -56,7 +56,7 @@ Eventful.prototype = {
      * @param {Object} [context]
      */
     on: function (event, query, handler, context) {
-        console.log(this._$handlers);
+        // console.log(this._$handlers);
         return on(this, event, query, handler, context, false);
     },
 

@@ -115,6 +115,7 @@ transformableProto.updateTransform = function () {
         m[2] *= sy;
         m[3] *= sy;
     }
+    console.log('invTransform');
 
     this.invTransform = this.invTransform || matrix.create();
     matrix.invert(this.invTransform, m);
